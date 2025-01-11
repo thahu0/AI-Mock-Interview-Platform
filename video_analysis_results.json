@@ -1,0 +1,14 @@
+[
+    {
+        "qno": 0,
+        "question": "Tell me about yourself.",
+        "user_answer": "current affairs in artificial intelligence and data science Artificial Intelligence and data science artificial intelligence Artificial Intelligence and data science artificial intelligence",
+        "correct_answer": "I am a recent graduate in [Field] from [University]. I have developed skills in [specific skills], worked on [project/internship], and am passionate about [related area]."
+    },
+    {
+        "qno": 1,
+        "question": "What are your strengths and weaknesses?",
+        "user_answer": "distance in load strong leadership capabilities leadership capabilities and capabilities and leadership capabilities",
+        "correct_answer": "My strengths include [skill] and [skill]. A weakness I am working on is [weakness], and I have taken steps to improve it by [method]."
+    }
+]
