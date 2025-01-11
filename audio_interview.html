@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Interview</title>
+    <style>
+        /* Basic reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #4a90e2;
+            margin-bottom: 20px;
+        }
+
+        .question-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            background-color: #f1f8ff;
+        }
+
+        #question-text {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-fill {
+            background-color: #4a90e2;
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .controls button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .controls button:hover {
+            background-color: #357ab8;
+        }
+
+        #result-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        #result-btn:hover {
+            background-color: #e25555;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Audio Interview</h1>
+
+        <div class="progress-bar">
+            <div id="progress" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+
+        <div class="question-container">
+            <p id="question-text">Loading question...</p>
+            <div class="timer">Time Left: <span id="timer">60</span>s</div>
+        </div>
+
+        <div class="controls">
+            <button id="record-btn">Start Recording</button>
+            <button id="next-btn">Next Question</button>
+        </div>
+
+        <button id="result-btn">Submit and See Results</button>
+    </div>
+
+    <script>
+        const questions = {{ questions|tojson }};
+        let currentQuestionIndex = 0;
+        let countdown;
+        let timeLeft = 60;
+        let isRecording = false;
+        let mediaRecorder;
+        let audioChunks = [];
+
+        function loadQuestion() {
+            document.getElementById("question-text").innerText = questions[currentQuestionIndex];
+            resetTimer();
+            updateProgressBar();
+        }
+
+        function resetTimer() {
+            clearInterval(countdown);
+            timeLeft = 60;
+            document.getElementById("timer").innerText = timeLeft;
+            countdown = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    stopRecording();
+                }
+            }, 1000);
+        }
+
+        function updateProgressBar() {
+            const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById("progress").style.width = progressPercentage + "%";
+        }
+
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.start();
+                    isRecording = true;
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        const formData = new FormData();
+                        formData.append("audio", audioBlob);
+                        formData.append("question_id", currentQuestionIndex);
+
+                        fetch("/save_audio", {
+                            method: "POST",
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                console.log(data.message);
+                            } else {
+                                console.error(data.message);
+                            }
+                        })
+                        .catch(error => console.error("Error uploading audio:", error));
+                    };
+                })
+                .catch(error => {
+                    console.error("Error accessing microphone:", error);
+                });
+        }
+
+        function stopRecording() {
+            if (isRecording && mediaRecorder) {
+                mediaRecorder.stop();
+                isRecording = false;
+            }
+        }
+
+        document.getElementById("record-btn").addEventListener("click", () => {
+            if (isRecording) {
+                stopRecording();
+                document.getElementById("record-btn").innerText = "Start Recording";
+            } else {
+                startRecording();
+                document.getElementById("record-btn").innerText = "Stop Recording";
+            }
+        });
+
+        document.getElementById("next-btn").addEventListener("click", () => {
+            stopRecording();
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                // Disable the next button when no more questions
+                document.getElementById("next-btn").disabled = true;
+            }
+        });
+
+        document.getElementById("result-btn").addEventListener("click", () => {
+            // Redirect to the result dashboard page
+            window.location.href = "/audio_dash";
+        });
+
+        // Initialize the first question and timer on load
+        loadQuestion();
+    </script>
+</body>
+</html>

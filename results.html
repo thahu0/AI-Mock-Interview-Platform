@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        h1 {
+            font-size: 2.2em;
+            color: #4a90e2;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-top: 0;
+        }
+        h3 {
+            font-size: 1.4em;
+            color: #777;
+        }
+        .chart {
+            margin: 20px 0;
+        }
+        .confidence-section, .tips-section, .accuracy-section {
+            margin: 20px 0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background-color: #f7f9fc;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .confidence-score, .accuracy-score {
+            font-size: 1.5em;
+            color: #333;
+        }
+        .tips {
+            font-size: 1.2em;
+            color: #555;
+        }
+        .button {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #357ABD;
+        }
+        .table-container {
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        table th {
+            background-color: #4a90e2;
+            color: white;
+        }
+        table tr:nth-child(even) {
+            background-color: #f7f9fc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Interview Analysis Results</h1>
+
+        <div class="chart">
+            <h2>Emotion Frequency Chart</h2>
+            <img src="{{ url_for('static', filename='video_emotion_chart.png') }}" alt="Emotion Frequency Chart" width="100%">
+        </div>
+
+        <div class="chart">
+            <h2>Accuracy Trend</h2>
+            <img src="{{ url_for('static', filename='video_accuracy_trend.png') }}" alt="Accuracy Trend Over Time" width="100%">
+        </div>
+
+        <div class="confidence-section">
+            <h2>Confidence Score</h2>
+            <p class="confidence-score">{{ results.confidence | round(2) }} (Confidence level based on emotions)</p>
+        </div>
+
+        <div class="tips-section">
+            <h2>Tips for Improvement</h2>
+            <p class="tips">{{ results.tips }}</p>
+        </div>
+
+         <div class="answers-section">
+            <h2>Question-wise Results</h2>
+            <table>
+    <thead>
+        <tr>	
+            <th>Qno</th>
+	    <th>Question</th>
+            <th>Your Answer</th>
+            <th>Correct Answer</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for q in results.questions %}
+        <tr>
+            <td>{{ q.qno }}</td>
+	    <td>{{ q.question }}</td>
+            <td>{{ q.user_answer }}</td>
+            <td>{{ q.correct_answer }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+        </div>
+
+
+
+        <!-- Return Button -->
+        <a href="/" class="button">Return to Home</a>
+    </div>
+</body>
+</html>
+
