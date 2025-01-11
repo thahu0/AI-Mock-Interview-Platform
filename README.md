@@ -81,7 +81,7 @@ AI-Mock-Interview-Platform/
 │   ├── models.py            # Database models  
 │   ├── config.py            # Configuration settings  
 │   └── app.py               # Main Flask application  
-│
+│--recordings
 ├── requirements.txt         # Dependencies  
 ├── README.md                # Project documentation  
 └── LICENSE                  # License information  
